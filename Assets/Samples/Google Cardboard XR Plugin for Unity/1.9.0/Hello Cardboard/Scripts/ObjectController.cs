@@ -16,8 +16,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+
+using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Timers;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Controls target objects behaviour.
@@ -41,10 +46,18 @@ public class ObjectController : MonoBehaviour
     private const float _maxObjectDistance = 3.5f;
     private const float _minObjectHeight = 0.5f;
     private const float _maxObjectHeight = 3.5f;
+  
+    private int timeOfShooting = 400;
+    private bool isObjectInCamera = false;
+    private int timeOfDeath = 1500;
+    private bool isShot = false;
+
+    private GameObject imageObject = null;
+    private Image shootingProgress = null;
 
     private Renderer _myRenderer;
     private Vector3 _startingPosition;
-
+    
     /// <summary>
     /// Start is called before the first frame update.
     /// </summary>
@@ -55,6 +68,36 @@ public class ObjectController : MonoBehaviour
         SetMaterial(false);
     }
 
+    public void Update()
+    {
+        imageObject = GameObject.FindGameObjectWithTag("ShootingProgress");
+        if (imageObject != null)
+        {
+            shootingProgress = imageObject.GetComponent<Image>();
+        }
+        MeshRenderer mr = gameObject.GetComponent<MeshRenderer>();
+        if (isObjectInCamera==true && isShot ==false)
+        {
+            shootingProgress.fillAmount = (float)timeOfShooting / 400;
+            timeOfShooting -= 1;
+        }
+        if(timeOfShooting==0)
+        {
+            isShot = true;
+            timeOfShooting = 400;
+            mr.enabled = false;
+        }
+        if(isShot==true)
+        {
+            timeOfDeath -= 1;
+        }
+        if(timeOfDeath==0)
+        {
+            isShot = false;
+            timeOfDeath = 1500;
+            mr.enabled = true;
+        }
+    }
     /// <summary>
     /// Teleports this instance randomly when triggered by a pointer click.
     /// </summary>
@@ -63,13 +106,13 @@ public class ObjectController : MonoBehaviour
         // Picks a random sibling, activates it and deactivates itself.
         int sibIdx = transform.GetSiblingIndex();
         int numSibs = transform.parent.childCount;
-        sibIdx = (sibIdx + Random.Range(1, numSibs)) % numSibs;
+        sibIdx = (sibIdx + UnityEngine.Random.Range(1, numSibs)) % numSibs;
         GameObject randomSib = transform.parent.GetChild(sibIdx).gameObject;
 
         // Computes new object's location.
-        float angle = Random.Range(-Mathf.PI, Mathf.PI);
-        float distance = Random.Range(_minObjectDistance, _maxObjectDistance);
-        float height = Random.Range(_minObjectHeight, _maxObjectHeight);
+        float angle = UnityEngine.Random.Range(-Mathf.PI, Mathf.PI);
+        float distance = UnityEngine.Random.Range(_minObjectDistance, _maxObjectDistance);
+        float height = UnityEngine.Random.Range(_minObjectHeight, _maxObjectHeight);
         Vector3 newPos = new Vector3(Mathf.Cos(angle) * distance, height,
                                      Mathf.Sin(angle) * distance);
 
@@ -86,7 +129,11 @@ public class ObjectController : MonoBehaviour
     /// </summary>
     public void OnPointerEnter()
     {
-        GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        isObjectInCamera = true;
+        if (isShot == false)
+        {
+            GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+        }
     }
 
     /// <summary>
@@ -94,7 +141,11 @@ public class ObjectController : MonoBehaviour
     /// </summary>
     public void OnPointerExit()
     {
-        GetComponent<Renderer>().material.SetColor("_Color", Color.red);
+        isObjectInCamera = false;
+        if (isShot == false)
+        {
+            GetComponent<Renderer>().material.SetColor("_Color", Color.red);
+        }
     }
 
     /// <summary>
