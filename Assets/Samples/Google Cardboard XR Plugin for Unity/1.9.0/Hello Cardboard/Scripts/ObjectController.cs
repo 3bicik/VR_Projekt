@@ -47,9 +47,9 @@ public class ObjectController : MonoBehaviour
     private const float _minObjectHeight = 0.5f;
     private const float _maxObjectHeight = 3.5f;
   
-    private int timeOfShooting = 400;
+    private int timeOfShooting = 400/4;
     private bool isObjectInCamera = false;
-    private int timeOfDeath = 1500;
+    private int timeOfDeath = 1500/4;
     private bool isShot = false;
 
     private GameObject imageObject = null;
@@ -78,14 +78,15 @@ public class ObjectController : MonoBehaviour
         MeshRenderer mr = gameObject.GetComponent<MeshRenderer>();
         if (isObjectInCamera==true && isShot ==false)
         {
-            shootingProgress.fillAmount = (float)timeOfShooting / 400;
+            shootingProgress.fillAmount = (float)timeOfShooting / (400/4);
             timeOfShooting -= 1;
         }
         if(timeOfShooting==0)
         {
             isShot = true;
-            timeOfShooting = 400;
+            timeOfShooting = 400/4;
             mr.enabled = false;
+            GetComponent<Renderer>().material.SetColor("_Color", Color.red);
         }
         if(isShot==true)
         {
@@ -94,7 +95,7 @@ public class ObjectController : MonoBehaviour
         if(timeOfDeath==0)
         {
             isShot = false;
-            timeOfDeath = 1500;
+            timeOfDeath = 1500/4;
             mr.enabled = true;
         }
     }
