@@ -29,6 +29,9 @@ using System.Threading.Tasks;
 /// </summary>
 public class ObjectController : MonoBehaviour
 {
+
+    private static ILogger logger = Debug.unityLogger;
+
     /// <summary>
     /// The material to use when this object is inactive (not being gazed at).
     /// </summary>
@@ -65,7 +68,7 @@ public class ObjectController : MonoBehaviour
     {
         _startingPosition = transform.parent.localPosition;
         _myRenderer = GetComponent<Renderer>();
-        SetMaterial(false);
+        logger.Log(_myRenderer);
     }
 
     public void Update()
