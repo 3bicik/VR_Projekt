@@ -48,6 +48,8 @@ public class EnemyMeshController : MonoBehaviour
     public delegate void OnDeath();
     public OnDeath onDeathCallback;
     
+    private float moveSpeed = 0.5f;
+
     /// <summary>
     /// Start is called before the first frame update.
     /// </summary>
@@ -55,6 +57,7 @@ public class EnemyMeshController : MonoBehaviour
     {
         mySkinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
         myAnimator = GetComponentInParent<Animator>();
+        thePlayer = GameObject.Find("Player");
         LookAtThePlayer();
     }
 
@@ -81,6 +84,10 @@ public class EnemyMeshController : MonoBehaviour
         if(isShot==true)
         {
             elapsedDyingTime += Time.deltaTime;
+        } else {
+            if(transform.parent.position !=  thePlayer.transform.position) {
+                transform.parent.position = Vector3.MoveTowards(transform.parent.position, thePlayer.transform.position, moveSpeed*Time.deltaTime);
+            }
         }
         if(elapsedDyingTime >= TOTAL_DYING_TIME)
         {
