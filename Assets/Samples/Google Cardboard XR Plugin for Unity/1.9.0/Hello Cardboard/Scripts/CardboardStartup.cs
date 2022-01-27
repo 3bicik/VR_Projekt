@@ -40,6 +40,8 @@ public class CardboardStartup : MonoBehaviour
         {
             Api.ScanDeviceParams();
         }
+        GameManager.EndGame = false;
+        gameManager = GameObject.Find("GameManager");
     }
 
     /// <summary>
@@ -68,5 +70,12 @@ public class CardboardStartup : MonoBehaviour
         }
 
         Api.UpdateScreenParams();
+
+        if(GameManager.EndGame)
+        {
+            Application.Quit();
+        }
     }
+
+    public GameObject gameManager;
 }

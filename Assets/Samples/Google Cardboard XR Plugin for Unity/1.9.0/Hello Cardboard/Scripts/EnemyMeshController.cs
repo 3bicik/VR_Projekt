@@ -29,8 +29,9 @@ using System.Threading.Tasks;
 /// </summary>
 public class EnemyMeshController : MonoBehaviour
 {
-
+    public GameObject killCounter;
     public GameObject thePlayer;
+    public Text counterText;
     private static ILogger logger = Debug.unityLogger;
   
     public float TOTAL_SHOOTING_TIME = 3;
@@ -48,7 +49,7 @@ public class EnemyMeshController : MonoBehaviour
     public delegate void OnDeath();
     public OnDeath onDeathCallback;
     
-    private float moveSpeed = 0.5f;
+    private float moveSpeed = 1f;
 
     /// <summary>
     /// Start is called before the first frame update.
@@ -58,6 +59,8 @@ public class EnemyMeshController : MonoBehaviour
         mySkinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
         myAnimator = GetComponentInParent<Animator>();
         thePlayer = GameObject.Find("Player");
+        killCounter = GameObject.Find("KillCounter");
+        counterText = killCounter.GetComponent<Text>();
         LookAtThePlayer();
     }
 
@@ -88,11 +91,17 @@ public class EnemyMeshController : MonoBehaviour
             if(transform.parent.position !=  thePlayer.transform.position) {
                 transform.parent.position = Vector3.MoveTowards(transform.parent.position, thePlayer.transform.position, moveSpeed*Time.deltaTime);
             }
+            else{
+                Debug.Log("PLAYER DEAD");
+                GameManager.EndGame = true;
+            }
         }
         if(elapsedDyingTime >= TOTAL_DYING_TIME)
         {
             isShot = false;
             elapsedDyingTime = 0;
+            GameManager.KillCounter++;
+            counterText.text = GameManager.KillCounter.ToString();
             myAnimator.Play("IdleBattle");
             onDeathCallback();
         }
