@@ -24,7 +24,8 @@ using UnityEngine;
 /// </summary>
 public class CameraPointer : MonoBehaviour
 {
-    private const float _maxDistance = 10;
+    private static ILogger logger = Debug.unityLogger;
+    private const float _maxDistance = 100;
     private GameObject _gazedAtObject = null;
 
     /// <summary>
@@ -32,10 +33,11 @@ public class CameraPointer : MonoBehaviour
     /// </summary>
     public void Update()
     {
+        int layerMask = 1 << 3;
         // Casts ray towards camera's forward direction, to detect if a GameObject is being gazed
         // at.
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance, layerMask))
         {
             // GameObject detected in front of the camera.
             if (_gazedAtObject != hit.transform.gameObject)
@@ -52,14 +54,14 @@ public class CameraPointer : MonoBehaviour
         else
         {
             // No GameObject detected in front of the camera.
-            _gazedAtObject?.SendMessage("OnPointerExit");
+            if(_gazedAtObject) _gazedAtObject.SendMessage("OnPointerExit");
             _gazedAtObject = null;
         }
 
         // Checks for screen touches.
         if (Google.XR.Cardboard.Api.IsTriggerPressed)
         {
-            _gazedAtObject?.SendMessage("OnPointerClick");
+            if(_gazedAtObject) _gazedAtObject.SendMessage("OnPointerClick");
         }
 
     }
