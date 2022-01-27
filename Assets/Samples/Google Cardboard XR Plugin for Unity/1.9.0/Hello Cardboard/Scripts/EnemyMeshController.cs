@@ -30,95 +30,102 @@ using System.Threading.Tasks;
 public class EnemyMeshController : MonoBehaviour
 {
 
-    public GameObject thePlayer;
-    private static ILogger logger = Debug.unityLogger;
-  
-    public float TOTAL_SHOOTING_TIME = 3;
-    public float TOTAL_DYING_TIME = 5;
-    private float elapsedShootingTime = 0;
-    private float elapsedDyingTime = 0;
-    private bool isObjectInCamera = false;
-    private bool isShot = false;
+  public GameObject thePlayer;
+  private static ILogger logger = Debug.unityLogger;
 
-    private GameObject imageObject = null;
-    private Image shootingProgress = null;
+  public float TOTAL_SHOOTING_TIME = 3;
+  public float TOTAL_DYING_TIME = 5;
+  private float elapsedShootingTime = 0;
+  private float elapsedDyingTime = 0;
+  private bool isObjectInCamera = false;
+  private bool isShot = false;
 
-    private SkinnedMeshRenderer mySkinnedMeshRenderer;
-    private Animator myAnimator;
-    public delegate void OnDeath();
-    public OnDeath onDeathCallback;
-    
-    private float moveSpeed = 0.5f;
+  private GameObject imageObject = null;
+  private Image shootingProgress = null;
 
-    /// <summary>
-    /// Start is called before the first frame update.
-    /// </summary>
-    public void Start()
+  private SkinnedMeshRenderer mySkinnedMeshRenderer;
+  private Animator myAnimator;
+  public delegate void OnDeath();
+  public OnDeath onDeathCallback;
+
+  private float moveSpeed = 1f;
+
+  /// <summary>
+  /// Start is called before the first frame update.
+  /// </summary>
+  public void Start()
+  {
+    mySkinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+    myAnimator = GetComponentInParent<Animator>();
+    thePlayer = GameObject.Find("Player");
+    TOTAL_SHOOTING_TIME = UnityEngine.Random.Range(3, 5);
+    LookAtThePlayer();
+  }
+
+  public void Update()
+  {
+
+    imageObject = GameObject.FindGameObjectWithTag("ShootingProgress");
+    if (imageObject != null)
     {
-        mySkinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-        myAnimator = GetComponentInParent<Animator>();
-        thePlayer = GameObject.Find("Player");
-        LookAtThePlayer();
+      shootingProgress = imageObject.GetComponent<Image>();
     }
 
-    public void Update()
+    if (isObjectInCamera == true && isShot == false)
     {
-
-        imageObject = GameObject.FindGameObjectWithTag("ShootingProgress");
-        if (imageObject != null)
-        {
-            shootingProgress = imageObject.GetComponent<Image>();
-        }
-
-        if (isObjectInCamera==true && isShot ==false)
-        {
-            shootingProgress.fillAmount = (TOTAL_SHOOTING_TIME - elapsedShootingTime) / TOTAL_SHOOTING_TIME;
-            elapsedShootingTime += Time.deltaTime;
-        }
-        if(elapsedShootingTime >= TOTAL_SHOOTING_TIME)
-        {
-            isShot = true;
-            elapsedShootingTime = 0;
-            myAnimator.Play("Die");
-        }
-        if(isShot==true)
-        {
-            elapsedDyingTime += Time.deltaTime;
-        } else {
-            if(transform.parent.position !=  thePlayer.transform.position) {
-                transform.parent.position = Vector3.MoveTowards(transform.parent.position, thePlayer.transform.position, moveSpeed*Time.deltaTime);
-            }
-        }
-        if(elapsedDyingTime >= TOTAL_DYING_TIME)
-        {
-            isShot = false;
-            elapsedDyingTime = 0;
-            myAnimator.Play("IdleBattle");
-            onDeathCallback();
-        }
+      shootingProgress.fillAmount = (TOTAL_SHOOTING_TIME - elapsedShootingTime) / TOTAL_SHOOTING_TIME;
+      elapsedShootingTime += Time.deltaTime;
     }
-
-    public void OnPointerEnter()
+    if (elapsedShootingTime >= TOTAL_SHOOTING_TIME)
     {
-        isObjectInCamera = true;
+      isShot = true;
+      elapsedShootingTime = 0;
+      myAnimator.Play("Die");
     }
-
-    public void OnPointerExit()
+    if (isShot == true)
     {
-        isObjectInCamera = false;
+      elapsedDyingTime += Time.deltaTime;
     }
+    else
+    {
+      if (transform.parent.position != thePlayer.transform.position)
+      {
+        transform.parent.position = Vector3.MoveTowards(transform.parent.position, thePlayer.transform.position, moveSpeed * Time.deltaTime);
+      }
+    }
+    if (elapsedDyingTime >= TOTAL_DYING_TIME)
+    {
+      isShot = false;
+      elapsedDyingTime = 0;
+      myAnimator.Play("IdleBattle");
+      onDeathCallback();
+    }
+  }
 
-    private void LookAtThePlayer() {
-        transform.parent.LookAt(GameObject.Find("Player").transform);
-    }
+  public void OnPointerEnter()
+  {
+    isObjectInCamera = true;
+  }
 
-    public void SetOnDeathCallback(OnDeath callback) {
-        onDeathCallback = callback;
-    }
+  public void OnPointerExit()
+  {
+    isObjectInCamera = false;
+  }
 
-    public void SetThePlayer(GameObject thePlayer) {
-        logger.Log("Player set");
-        this.thePlayer = thePlayer;
-        LookAtThePlayer();
-    }
+  private void LookAtThePlayer()
+  {
+    transform.parent.LookAt(GameObject.Find("Player").transform);
+  }
+
+  public void SetOnDeathCallback(OnDeath callback)
+  {
+    onDeathCallback = callback;
+  }
+
+  public void SetThePlayer(GameObject thePlayer)
+  {
+    logger.Log("Player set");
+    this.thePlayer = thePlayer;
+    LookAtThePlayer();
+  }
 }
