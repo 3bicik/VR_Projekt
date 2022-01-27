@@ -64,7 +64,7 @@ public class EnemyMeshController : MonoBehaviour
         LookAtThePlayer();
     }
 
-    public void Update()
+    if (isObjectInCamera == true && isShot == false)
     {
 
         imageObject = GameObject.FindGameObjectWithTag("ShootingProgress");
@@ -106,28 +106,56 @@ public class EnemyMeshController : MonoBehaviour
             onDeathCallback();
         }
     }
-
-    public void OnPointerEnter()
+    if (elapsedShootingTime >= TOTAL_SHOOTING_TIME)
     {
-        isObjectInCamera = true;
+      isShot = true;
+      elapsedShootingTime = 0;
+      myAnimator.Play("Die");
     }
-
-    public void OnPointerExit()
+    if (isShot == true)
     {
-        isObjectInCamera = false;
+      elapsedDyingTime += Time.deltaTime;
     }
+    else
+    {
+      if (transform.parent.position != thePlayer.transform.position)
+      {
+        transform.parent.position = Vector3.MoveTowards(transform.parent.position, thePlayer.transform.position, moveSpeed * Time.deltaTime);
+      }
+    }
+    if (elapsedDyingTime >= TOTAL_DYING_TIME)
+    {
+      isShot = false;
+      elapsedDyingTime = 0;
+      myAnimator.Play("IdleBattle");
+      onDeathCallback();
+    }
+  }
 
-    private void LookAtThePlayer() {
-        transform.parent.LookAt(GameObject.Find("Player").transform);
-    }
+  public void OnPointerEnter()
+  {
+    isObjectInCamera = true;
+  }
 
-    public void SetOnDeathCallback(OnDeath callback) {
-        onDeathCallback = callback;
-    }
+  public void OnPointerExit()
+  {
+    isObjectInCamera = false;
+  }
 
-    public void SetThePlayer(GameObject thePlayer) {
-        logger.Log("Player set");
-        this.thePlayer = thePlayer;
-        LookAtThePlayer();
-    }
+  private void LookAtThePlayer()
+  {
+    transform.parent.LookAt(GameObject.Find("Player").transform);
+  }
+
+  public void SetOnDeathCallback(OnDeath callback)
+  {
+    onDeathCallback = callback;
+  }
+
+  public void SetThePlayer(GameObject thePlayer)
+  {
+    logger.Log("Player set");
+    this.thePlayer = thePlayer;
+    LookAtThePlayer();
+  }
 }
