@@ -83,6 +83,9 @@ public class EnemyMeshController : MonoBehaviour
       isShot = true;
       elapsedShootingTime = 0;
       myAnimator.Play("Die");
+      elapsedDyingTime = 0;
+      GameManager.KillCounter++;
+      counterText.text = GameManager.KillCounter.ToString();
     }
     if (isShot == true)
     {
@@ -103,9 +106,6 @@ public class EnemyMeshController : MonoBehaviour
     if (elapsedDyingTime >= TOTAL_DYING_TIME)
     {
       isShot = false;
-      elapsedDyingTime = 0;
-      GameManager.KillCounter++;
-      counterText.text = GameManager.KillCounter.ToString();
       myAnimator.Play("IdleBattle");
       onDeathCallback();
     }
