@@ -29,52 +29,82 @@ using System.Threading.Tasks;
 /// </summary>
 public class EnemyMeshController : MonoBehaviour
 {
+    public GameObject killCounter;
+    public GameObject thePlayer;
+    public Text counterText;
+    private static ILogger logger = Debug.unityLogger;
+  
+    public float TOTAL_SHOOTING_TIME = 3;
+    public float TOTAL_DYING_TIME = 5;
+    private float elapsedShootingTime = 0;
+    private float elapsedDyingTime = 0;
+    private bool isObjectInCamera = false;
+    private bool isShot = false;
 
-  public GameObject thePlayer;
-  private static ILogger logger = Debug.unityLogger;
+    private GameObject imageObject = null;
+    private Image shootingProgress = null;
 
-  public float TOTAL_SHOOTING_TIME = 3;
-  public float TOTAL_DYING_TIME = 5;
-  private float elapsedShootingTime = 0;
-  private float elapsedDyingTime = 0;
-  private bool isObjectInCamera = false;
-  private bool isShot = false;
+    private SkinnedMeshRenderer mySkinnedMeshRenderer;
+    private Animator myAnimator;
+    public delegate void OnDeath();
+    public OnDeath onDeathCallback;
+    
+    private float moveSpeed = 1f;
 
-  private GameObject imageObject = null;
-  private Image shootingProgress = null;
-
-  private SkinnedMeshRenderer mySkinnedMeshRenderer;
-  private Animator myAnimator;
-  public delegate void OnDeath();
-  public OnDeath onDeathCallback;
-
-  private float moveSpeed = 1f;
-
-  /// <summary>
-  /// Start is called before the first frame update.
-  /// </summary>
-  public void Start()
-  {
-    mySkinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-    myAnimator = GetComponentInParent<Animator>();
-    thePlayer = GameObject.Find("Player");
-    TOTAL_SHOOTING_TIME = UnityEngine.Random.Range(3, 5);
-    LookAtThePlayer();
-  }
-
-  public void Update()
-  {
-
-    imageObject = GameObject.FindGameObjectWithTag("ShootingProgress");
-    if (imageObject != null)
+    /// <summary>
+    /// Start is called before the first frame update.
+    /// </summary>
+    public void Start()
     {
-      shootingProgress = imageObject.GetComponent<Image>();
+        mySkinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+        myAnimator = GetComponentInParent<Animator>();
+        thePlayer = GameObject.Find("Player");
+        killCounter = GameObject.Find("KillCounter");
+        counterText = killCounter.GetComponent<Text>();
+        LookAtThePlayer();
     }
 
     if (isObjectInCamera == true && isShot == false)
     {
-      shootingProgress.fillAmount = (TOTAL_SHOOTING_TIME - elapsedShootingTime) / TOTAL_SHOOTING_TIME;
-      elapsedShootingTime += Time.deltaTime;
+
+        imageObject = GameObject.FindGameObjectWithTag("ShootingProgress");
+        if (imageObject != null)
+        {
+            shootingProgress = imageObject.GetComponent<Image>();
+        }
+
+        if (isObjectInCamera==true && isShot ==false)
+        {
+            shootingProgress.fillAmount = (TOTAL_SHOOTING_TIME - elapsedShootingTime) / TOTAL_SHOOTING_TIME;
+            elapsedShootingTime += Time.deltaTime;
+        }
+        if(elapsedShootingTime >= TOTAL_SHOOTING_TIME)
+        {
+            isShot = true;
+            elapsedShootingTime = 0;
+            myAnimator.Play("Die");
+        }
+        if(isShot==true)
+        {
+            elapsedDyingTime += Time.deltaTime;
+        } else {
+            if(transform.parent.position !=  thePlayer.transform.position) {
+                transform.parent.position = Vector3.MoveTowards(transform.parent.position, thePlayer.transform.position, moveSpeed*Time.deltaTime);
+            }
+            else{
+                Debug.Log("PLAYER DEAD");
+                GameManager.EndGame = true;
+            }
+        }
+        if(elapsedDyingTime >= TOTAL_DYING_TIME)
+        {
+            isShot = false;
+            elapsedDyingTime = 0;
+            GameManager.KillCounter++;
+            counterText.text = GameManager.KillCounter.ToString();
+            myAnimator.Play("IdleBattle");
+            onDeathCallback();
+        }
     }
     if (elapsedShootingTime >= TOTAL_SHOOTING_TIME)
     {
